@@ -9,24 +9,29 @@
  *
  */
 
-Flock flock;
+int numFlocks = 2;
+Flock[] flocks;
 
 void setup() {
   size(1280, 720);
-  flock = new Flock();
-  // Add an initial set of boids into the system
-  for (int i = 0; i < 150; i++) {
-    flock.addBoid(new Boid(width/2,height/2));
+  flocks = new Flock[numFlocks];
+  //initiate flocks
+  for (int i = 0; i < numFlocks; i++) {
+    flocks[i] = new Flock(100, color(random(255),random(255),random(255)), i);
   }
 }
 
 void draw() {
   background(50);
-  flock.run();
+  
+  for(int i = 0; i < numFlocks; i++) {
+    flocks[i].run();
+  }
+  
   text("FPS: " + frameRate, 10, 20);
 }
 
 // Add a new boid into the System
 void mousePressed() {
-  flock.addBoid(new Boid(mouseX,mouseY));
+  flocks[0].addBoid(mouseX, mouseY);
 }

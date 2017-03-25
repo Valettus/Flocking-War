@@ -5,19 +5,23 @@ class Boid {
   PVector velocity;
   PVector acceleration;
   float r;
-  float maxforce;
-  float maxspeed;
-
-  Boid(float x, float y) {
+  float maxForce;
+  float maxSpeed;
+  
+  color strokeColor;
+  
+  Boid(float x, float y, color c) {
+    strokeColor = c;
+    
     acceleration = new PVector(0, 0);
-
+    
     float angle = random(TWO_PI);
     velocity = new PVector(cos(angle), sin(angle));
     
     position = new PVector(x, y);
     r = 2.0;
-    maxspeed = 2;
-    maxforce = 0.03;
+    maxSpeed = 2;
+    maxForce = 0.03;
   }
 
   void run(ArrayList<Boid> boids) {
@@ -52,7 +56,7 @@ class Boid {
     //Update velocity
     velocity.add(acceleration);
     //Limit speed
-    velocity.limit(maxspeed);
+    velocity.limit(maxSpeed);
     position.add(velocity);
     //Reset accelertion to 0 each cycle
     acceleration.mult(0);
@@ -61,15 +65,15 @@ class Boid {
   PVector calcSteer(PVector desired) {
     //First two lines of code below could be condensed with new PVector setMag() method
     //Not using this method until Processing.js catches up
-    //sum.setMag(maxspeed);
+    //sum.setMag(maxSpeed);
     
     //Scale to maximum speed
     desired.normalize();
-    desired.mult(maxspeed);
+    desired.mult(maxSpeed);
     
     //Reynolds: Steering = Desired - Velocity
     desired.sub(velocity);
-    desired.limit(maxforce);
+    desired.limit(maxForce);
     
     return desired;
   }
@@ -80,7 +84,7 @@ class Boid {
     //heading2D() above is now heading() but leaving old syntax until Processing.js catches up
     
     fill(200, 100);
-    stroke(255);
+    stroke(strokeColor);
     pushMatrix();
     translate(position.x, position.y);
     rotate(theta);

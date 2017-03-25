@@ -24,7 +24,7 @@ class Boid {
   void run(ArrayList<Boid> boids) {
     flock(boids);
     update();
-    borders();
+    borders(false);
     render();
   }
 
@@ -101,13 +101,31 @@ class Boid {
     popMatrix();
   }
 
-  // Wraparound
-  void borders() {
-    if (position.x < -r) position.x = width+r;
-    if (position.y < -r) position.y = height+r;
-    if (position.x > width+r) position.x = -r;
-    if (position.y > height+r) position.y = -r;
+  void borders(boolean wrap) {
+    if(wrap) {
+      if (position.x < -r) position.x = width+r;
+      if (position.y < -r) position.y = height+r;
+      if (position.x > width+r) position.x = -r;
+      if (position.y > height+r) position.y = -r;
+    }
+    else {
+      float margin = 100;
+      PVector repel = new PVector();
+      
+      if (position.x < -r + margin) repel.x = inverseLerp(0, -r + margin, max(0, position.x));
+      if (position.y < -r + margin) repel.y = inverseLerp(0, -r + margin, max(0, position.y));
+      if (position.x > width+r - margin) repel.x = -1*inverseLerp(width, width+r-margin, min(width, position.x));
+      if (position.y > height+r - margin) repel.y = -1*inverseLerp(height, height+r-margin, min(height, position.y));
+    
+      repel.mult(0.1);
+      applyForce(repel);
+    }
   }
+  
+  float inverseLerp(float min, float max, float mid) {
+    return 1-((mid - min) / (max - min));
+  }
+  
 
   // Separation
   // Calculate average steering vector away from nearby boids  

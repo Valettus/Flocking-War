@@ -1,12 +1,13 @@
 /**
- * Flocking 
- * by Daniel Shiffman.  
- * 
- * An implementation of Craig Reynold's Boids program to simulate
- * the flocking behavior of birds. Each boid steers itself based on 
- * rules of avoidance, alignment, and coherence.
- * 
- * Click the mouse to add a new boid.
+ * Flocking War
+ * Christopher Kaiser
+ *
+ * -Based on the Flocking example that comes with processing
+ * -implementation by Daniel Shiffman. 
+ * --An implementation of Craig Reynold's Boids program to simulate
+ * --the flocking behavior of birds. Each boid steers itself based on 
+ * --rules of avoidance, alignment, and coherence.
+ *
  */
 
 Flock flock;

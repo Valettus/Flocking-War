@@ -110,48 +110,51 @@ class Boid {
   }
 
   // Separation
-  // Method checks for nearby boids and steers away
-  PVector separate (ArrayList<Boid> boids, float radius) {
+  // Calculate average steering vector away from nearby boids  
+  PVector separate (ArrayList<Boid> boids, float radius, boolean weight) {
     //float desiredseparation = 25.0f;
     PVector sum = new PVector(0, 0);
     int count = 0;
     // For every boid in the system, check if it's too close
     for (Boid other : boids) {
       float d = PVector.dist(position, other.position);
-      // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+      
       if ((d > 0) && (d < radius)) {
-        // Calculate vector pointing away from neighbor
-        PVector diff = PVector.sub(position, other.position);
+        // Calculate vector pointing away from neighbor        
+        PVector diff = PVector.sub(position, other.position);        
         
-        // Weight by distance
-        diff.normalize();
-        diff.div(d);
-        
-        sum.add(diff);
-        
+        diff.normalize();        
+        if(weight) {
+          diff.div(d);// Weight by distance
+        }        
+        sum.add(diff);        
         count++; // Keep track of how many
       }
     }
     // Average -- divide by how many
     if (count > 0) {
-      sum.div((float)count);
+      sum.div((float)count);  
       return calcSteer(sum);
     }
     else {
-     return sum; //will be zero vector 
+      return sum; 
     }
+
   }
+  PVector separate(ArrayList<Boid> boids, float radius)
+  {
+    return separate(boids, radius, true);
+  }
+  
   // Cohesion
   // For the average position (i.e. center) of all nearby boids, calculate steering vector towards that position
   PVector cohesion (ArrayList<Boid> boids, float radius) {
-    return separate(boids, radius).mult(-1);
-    /*
-    float neighbordist = 50;
+    
     PVector sum = new PVector(0, 0);   // Start with empty vector to accumulate all positions
     int count = 0;
     for (Boid other : boids) {
       float d = PVector.dist(position, other.position);
-      if ((d > 0) && (d < neighbordist)) {
+      if ((d > 0) && (d < radius)) {
         sum.add(other.position); // Add position
         count++;
       }
@@ -162,7 +165,7 @@ class Boid {
     } 
     else {
       return new PVector(0, 0);
-    }*/
+    }
   }
   
   // Alignment

@@ -35,9 +35,9 @@ class Boid {
 
   // We accumulate a new acceleration each time based on three rules
   void flock(ArrayList<Boid> boids) {
-    PVector sep = separate(boids);   // Separation
-    PVector ali = align(boids);      // Alignment
-    PVector coh = cohesion(boids);   // Cohesion
+    PVector sep = separate(boids, 25);   // Separation
+    PVector ali = align(boids);          // Alignment
+    PVector coh = cohesion(boids, 50);   // Cohesion
     // Arbitrarily weight these forces
     sep.mult(1.5);
     ali.mult(1.0);
@@ -111,35 +111,60 @@ class Boid {
 
   // Separation
   // Method checks for nearby boids and steers away
-  PVector separate (ArrayList<Boid> boids) {
-    float desiredseparation = 25.0f;
-    PVector desired = new PVector(0, 0, 0);
+  PVector separate (ArrayList<Boid> boids, float radius) {
+    //float desiredseparation = 25.0f;
+    PVector sum = new PVector(0, 0);
     int count = 0;
     // For every boid in the system, check if it's too close
     for (Boid other : boids) {
       float d = PVector.dist(position, other.position);
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-      if ((d > 0) && (d < desiredseparation)) {
+      if ((d > 0) && (d < radius)) {
         // Calculate vector pointing away from neighbor
         PVector diff = PVector.sub(position, other.position);
+        
+        // Weight by distance
         diff.normalize();
-        diff.div(d);        // Weight by distance
-        desired.add(diff);
-        count++;            // Keep track of how many
+        diff.div(d);
+        
+        sum.add(diff);
+        
+        count++; // Keep track of how many
       }
     }
     // Average -- divide by how many
     if (count > 0) {
-      desired.div((float)count);
+      sum.div((float)count);
+      return calcSteer(sum);
     }
-
-    // As long as the vector is greater than 0
-    if (desired.mag() > 0) {
-      return calcSteer(desired);
+    else {
+     return sum; //will be zero vector 
     }
-    return desired; //Zero vector
   }
-
+  // Cohesion
+  // For the average position (i.e. center) of all nearby boids, calculate steering vector towards that position
+  PVector cohesion (ArrayList<Boid> boids, float radius) {
+    return separate(boids, radius).mult(-1);
+    /*
+    float neighbordist = 50;
+    PVector sum = new PVector(0, 0);   // Start with empty vector to accumulate all positions
+    int count = 0;
+    for (Boid other : boids) {
+      float d = PVector.dist(position, other.position);
+      if ((d > 0) && (d < neighbordist)) {
+        sum.add(other.position); // Add position
+        count++;
+      }
+    }
+    if (count > 0) {
+      sum.div(count);
+      return seek(sum);  // Steer towards the position
+    } 
+    else {
+      return new PVector(0, 0);
+    }*/
+  }
+  
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   PVector align (ArrayList<Boid> boids) {
@@ -163,25 +188,5 @@ class Boid {
     }
   }
 
-  // Cohesion
-  // For the average position (i.e. center) of all nearby boids, calculate steering vector towards that position
-  PVector cohesion (ArrayList<Boid> boids) {
-    float neighbordist = 50;
-    PVector sum = new PVector(0, 0);   // Start with empty vector to accumulate all positions
-    int count = 0;
-    for (Boid other : boids) {
-      float d = PVector.dist(position, other.position);
-      if ((d > 0) && (d < neighbordist)) {
-        sum.add(other.position); // Add position
-        count++;
-      }
-    }
-    if (count > 0) {
-      sum.div(count);
-      return seek(sum);  // Steer towards the position
-    } 
-    else {
-      return new PVector(0, 0);
-    }
-  }
+  
 }

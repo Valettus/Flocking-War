@@ -2,8 +2,7 @@
  * Flocking War
  * Christopher Kaiser
  *
- * -Based on the Flocking example that comes with processing
- * -implementation by Daniel Shiffman. 
+ * -Based on the Flocking example that comes with processing implementated by Daniel Shiffman. 
  * --An implementation of Craig Reynold's Boids program to simulate
  * --the flocking behavior of birds. Each boid steers itself based on 
  * --rules of avoidance, alignment, and coherence.
@@ -24,6 +23,7 @@ void setup() {
 void draw() {
   background(50);
   flock.run();
+  text("FPS: " + frameRate, 10, 20);
 }
 
 // Add a new boid into the System

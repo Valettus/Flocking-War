@@ -16,9 +16,17 @@ class Flock {
     }
   }
 
-  void run() {
+  void run(Flock[] allFlocks) {
     for (Boid b : boids) {
-      b.run(boids);  //Passing the entire list of boids to each boid individually
+      b.flock(boids);  //Passing the entire list of boids to each boid individually
+    
+      for(Flock f : allFlocks) {
+        if(f.index != index){
+          b.otherFlock(f.boids);
+        }
+      }
+      
+      b.run();
     }
   }
 

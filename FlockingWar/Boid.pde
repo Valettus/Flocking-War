@@ -24,8 +24,8 @@ class Boid {
     maxForce = 0.03;
   }
 
-  void run(ArrayList<Boid> boids) {
-    flock(boids);
+  void run() {
+    //flock(boids);
     update();
     borders(false);
     render();
@@ -50,7 +50,17 @@ class Boid {
     applyForce(ali);
     applyForce(coh);
   }
-
+  
+  void otherFlock(ArrayList<Boid> boids) {
+    PVector sep = separate(boids, 50);
+    //PVector coh = cohesion(boids, 50);    
+    
+    sep.mult(1.5);
+    //coh.mult(-0.5);
+    applyForce(sep);
+    //applyForce(coh);
+  }
+  
   // Method to update position
   void update() {
     //Update velocity
@@ -164,10 +174,17 @@ class Boid {
     
     PVector sum = new PVector(0, 0);
     int count = 0;
-    for (Boid other : boids) {
-      float d = PVector.dist(position, other.position);
-      if ((d > 0) && (d < radius)) {
-        sum.add(other.position); //Add position
+    int closest = 0;
+    float closestDist = 999999;
+    int num = boids.size();
+    for (int i = 0; i < num; i++) {
+      float d = PVector.sub(position, boids.get(i).position).magSq();
+      if(d > 0 && d < closestDist*closestDist) {
+        closestDist = d;
+        closest = i;
+      }
+      if ((d > 0) && (d < radius*radius)) {
+        sum.add(boids.get(i).position); //Add position
         count++;
       }
     }
@@ -177,7 +194,8 @@ class Boid {
       return calcSteer(sum.sub(position));
     }
     else {
-      return new PVector(0, 0);
+      //return new PVector(0, 0);
+      return calcSteer(PVector.sub(boids.get(closest).position, position));
     }
   }
   

@@ -9,7 +9,7 @@
  *
  */
 
-int numFlocks = 2;
+int numFlocks = 3;
 Flock[] flocks;
 
 void setup() {
@@ -25,7 +25,7 @@ void draw() {
   background(50);
   
   for(int i = 0; i < numFlocks; i++) {
-    flocks[i].run();
+    flocks[i].run(flocks);
   }
   
   text("FPS: " + frameRate, 10, 20);

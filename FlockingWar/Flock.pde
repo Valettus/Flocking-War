@@ -31,7 +31,7 @@ class Flock {
   }
 
   void addBoid(float x, float y) {
-    boids.add(new Boid(x,y, strokeColor));
+    boids.add(new Boid(x,y, strokeColor, this));
   }
 
 }

@@ -10,8 +10,11 @@ class Boid {
   
   color strokeColor;
   
-  Boid(float x, float y, color c) {
+  Flock flock;
+  
+  Boid(float x, float y, color c, Flock owner) {
     strokeColor = c;
+    flock = owner;
     
     acceleration = new PVector(0, 0);
     
@@ -53,20 +56,23 @@ class Boid {
   
   void otherFlock(ArrayList<Boid> boids) {
     PVector sep = separate(boids, 50);
-    //PVector coh = cohesion(boids, 50);    
+    PVector coh = cohesion(boids, 50);    
+    
+    if(countWithinRadius(boids, 20) > 3) {
+       flock.boids.remove(this);
+    }
     
     sep.mult(1.5);
-    //coh.mult(-0.5);
+    coh.mult(-0.5);
     applyForce(sep);
-    //applyForce(coh);
+    applyForce(coh);
   }
   
   // Method to update position
   void update() {
-    //Update velocity
     velocity.add(acceleration);
-    //Limit speed
     velocity.limit(maxSpeed);
+    
     position.add(velocity);
     //Reset accelertion to 0 each cycle
     acceleration.mult(0);
@@ -132,6 +138,18 @@ class Boid {
     return 1-((mid - min) / (max - min));
   }
   
+  int countWithinRadius(ArrayList<Boid> boids, float radius) {
+    radius = radius * radius;
+     
+    int count = 0;
+    for (Boid other : boids) {
+    float d = PVector.sub(position, other.position).magSq();
+      if ((d > 0) && (d < radius)) {        
+        count++;
+      }
+    }
+    return count;    
+  }
 
   //Separation
   //Calculate average steering vector away from nearby boids  

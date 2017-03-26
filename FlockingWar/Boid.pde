@@ -59,7 +59,7 @@ class Boid {
     PVector coh = cohesion(boids, 50);    
     
     if(countWithinRadius(boids, 20) > 3) {
-       flock.boids.remove(this);
+       flock.removeBoid(this);
     }
     
     sep.mult(1.5);

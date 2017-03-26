@@ -15,7 +15,7 @@ Flock[] flocks;
 void setup() {
   size(1280, 720);
   flocks = new Flock[numFlocks];
-  //initiate flocks
+  //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
     flocks[i] = new Flock(100, color(random(255),random(255),random(255)), i);
   }

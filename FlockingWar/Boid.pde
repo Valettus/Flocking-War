@@ -23,8 +23,8 @@ class Boid {
     
     position = new PVector(x, y);
     r = 2.0;
-    maxSpeed = 2;
-    maxForce = 0.03;
+    maxSpeed = 2.2;
+    maxForce = 0.04;
   }
 
   void run() {
@@ -45,9 +45,9 @@ class Boid {
     PVector ali = align(boids);          // Alignment
     PVector coh = cohesion(boids, 50);   // Cohesion
     // Arbitrarily weight these forces
-    sep.mult(1.5);
+    sep.mult(1.8);
     ali.mult(1.0);
-    coh.mult(1.0);
+    coh.mult(1.2);
     // Add the force vectors to acceleration
     applyForce(sep);
     applyForce(ali);
@@ -62,8 +62,8 @@ class Boid {
        flock.removeBoid(this);
     }
     
-    sep.mult(1.5);
-    coh.mult(-0.5);
+    sep.mult(2.0);
+    coh.mult(-1);
     applyForce(sep);
     applyForce(coh);
   }
@@ -129,7 +129,7 @@ class Boid {
       if (position.x > width+r - margin) repel.x = -1*inverseLerp(width, width+r-margin, min(width, position.x));
       if (position.y > height+r - margin) repel.y = -1*inverseLerp(height, height+r-margin, min(height, position.y));
     
-      repel.mult(0.1);
+      repel.mult(0.3);
       applyForce(repel);
     }
   }
@@ -211,10 +211,12 @@ class Boid {
       //Steer towards the position
       return calcSteer(sum.sub(position));
     }
-    else {
+    else if(num > 1){
       //return new PVector(0, 0);
       return calcSteer(PVector.sub(boids.get(closest).position, position));
     }
+    
+    return new PVector(0,0);
   }
   
   //Alignment

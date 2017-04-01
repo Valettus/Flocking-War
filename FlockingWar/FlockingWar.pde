@@ -9,7 +9,8 @@
  *
  */
 
-int numFlocks = 3;
+int numFlocks = 4;
+int maxBoids = 400;
 Flock[] flocks;
 
 void setup() {
@@ -17,7 +18,7 @@ void setup() {
   flocks = new Flock[numFlocks];
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
-    flocks[i] = new Flock(100, color(random(255),random(255),random(255)), i);
+    flocks[i] = new Flock(maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))), i);
   }
 }
 

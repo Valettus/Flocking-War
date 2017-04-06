@@ -159,22 +159,24 @@ class Boid {
     int count = 0;
     // For every boid in the system, check if it's too close
     for (Boid other : boids) {
-      float d = PVector.dist(position, other.position);      
-      if ((d > 0) && (d < radius)) {
+      float d = PVector.sub(position, other.position).magSq();      
+      if ((d > 0) && (d < radius*radius)) {
         // Calculate vector pointing away from neighbor        
         PVector sepVec = PVector.sub(position, other.position);        
         
-        sepVec.normalize();        
+        
+        //sepVec.normalize();        
         if(weight) {
           sepVec.div(d);// Weight by distance
-        }        
+        }     
+        
         sum.add(sepVec);        
         count++; // Keep track of how many
       }
     }
     // Average -- divide by how many
     if (count > 0) {
-      sum.div((float)count);  
+      sum.div((float)count).normalize();  
       return calcSteer(sum);
     }
     else {

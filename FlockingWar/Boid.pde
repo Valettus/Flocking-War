@@ -27,9 +27,11 @@ class Boid {
     maxForce = 0.04;
   }
 
-  void run() {
-    //flock(boids);
-    update();
+  void run() {    
+    //Always move toward center
+    applyForce(seek(FlockingWar.center).mult(0.5));
+    
+    move();
     borders(false);
     render();
   }
@@ -40,13 +42,13 @@ class Boid {
   }
 
   // We accumulate a new acceleration each time based on three rules
-  void flock(ArrayList<Boid> boids) {
-    PVector sep = separate(boids, 25);   // Separation
-    PVector ali = align(boids);          // Alignment
-    PVector coh = cohesion(boids, 50);   // Cohesion
+  void flock() {
+    PVector sep = separate(flock.boids, 25);   // Separation
+    PVector ali = align(flock.boids);          // Alignment
+    PVector coh = cohesion(flock.boids, 50);   // Cohesion
     // Arbitrarily weight these forces
     sep.mult(1.8);
-    ali.mult(1.0);
+    ali.mult(0.8);
     coh.mult(1.2);
     // Add the force vectors to acceleration
     applyForce(sep);
@@ -56,7 +58,7 @@ class Boid {
   
   void otherFlock(ArrayList<Boid> boids) {
     PVector sep = separate(boids, 50);
-    PVector coh = cohesion(boids, 50);    
+    PVector coh = cohesion(boids, 50);
     
     if(countWithinRadius(boids, 20) > 3) {
        flock.removeBoid(this);
@@ -69,13 +71,17 @@ class Boid {
   }
   
   // Method to update position
-  void update() {
+  void move() {
     velocity.add(acceleration);
     velocity.limit(maxSpeed);
     
     position.add(velocity);
     //Reset acceleration to 0 each cycle
     acceleration.mult(0);
+  }
+
+  PVector seek(PVector target) {
+    return calcSteer(PVector.sub(target, position)); 
   }
 
   PVector calcSteer(PVector desired) {
@@ -135,7 +141,7 @@ class Boid {
       }
           
       
-      repel.mult(0.3);
+      repel.mult(FlockingWar.borderWeight);
       applyForce(repel);
     }
   }

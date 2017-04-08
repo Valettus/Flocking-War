@@ -9,11 +9,36 @@
  *
  */
 
-int numFlocks = 4;
+/*
+TODO Before putting on GitHub:
+#Randomized parameters per flock (stored on flock class, accessed by Boids):
+  -Boid
+   -size
+   -maxSpeed
+   -maxForce
+   -weight on all flocking functions in flock() and otherFlock()
+   -*color
+  -Also slightly different values per boid (maybe, would add a bit of memory)
+#Ability to modify parameters at runtime
+  -Above parameters
+  -number of flocks (after reset)
+#Reset simulation without restart.
+#Actual aggressive functionality
+-When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
+-Flanking/surrounding (this may not be possible without managing behavior at the flock level)
+#Toggle hostility
+#Toggle avoiding other flocks
+
+
+
+*/
+
+int numFlocks = 2;
 int maxBoids = 400;
 Flock[] flocks;
 
 public static PVector center;
+public static float borderWeight = 0.2;
 
 void setup() {
   size(1280, 720);
@@ -27,7 +52,7 @@ void setup() {
 }
 
 void draw() {
-  background(50);
+  background(128);
   
   for(int i = 0; i < numFlocks; i++) {
     flocks[i].run(flocks);

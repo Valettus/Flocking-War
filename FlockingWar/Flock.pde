@@ -21,7 +21,7 @@ class Flock {
   void run(Flock[] allFlocks) {
     
     for (int i = 0; i < size; i++) {
-      boids.get(i).flock(boids);  //Passing the entire list of boids to each boid individually
+      boids.get(i).flock();  //Passing the entire list of boids to each boid individually
     
       for(Flock f : allFlocks) {
         if(i >= size) { break; }
@@ -41,8 +41,6 @@ class Flock {
   void removeBoid(Boid boid) {
     println("Removed Boid " + "(" + boid.position + ") " + (size-1));
     boids.remove(boid);
-    size--;
-    
+    size--;    
   }
-
 }

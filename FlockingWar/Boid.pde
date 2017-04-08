@@ -29,10 +29,10 @@ class Boid {
 
   void run() {    
     //Always move toward center
-    applyForce(seek(FlockingWar.center).mult(0.5));
+    applyForce(seek(FlockingWar.center).mult(0.8));
     
     move();
-    borders(false);
+    borders(true);
     render();
   }
 

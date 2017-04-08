@@ -28,7 +28,7 @@ TODO Before putting on GitHub:
 -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
 #Toggle hostility
 #Toggle avoiding other flocks
-
+#Toggle border wrapping/repel
 
 
 */

@@ -13,8 +13,12 @@ int numFlocks = 4;
 int maxBoids = 400;
 Flock[] flocks;
 
+public static PVector center;
+
 void setup() {
   size(1280, 720);
+  center = new PVector(width/2, height/2);
+  
   flocks = new Flock[numFlocks];
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {

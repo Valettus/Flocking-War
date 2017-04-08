@@ -74,14 +74,11 @@ class Boid {
     velocity.limit(maxSpeed);
     
     position.add(velocity);
-    //Reset accelertion to 0 each cycle
+    //Reset acceleration to 0 each cycle
     acceleration.mult(0);
   }
 
   PVector calcSteer(PVector desired) {
-    //First two lines of code below could be condensed with new PVector setMag() method
-    //Not using this method until Processing.js catches up
-    //sum.setMag(maxSpeed);
     
     //Scale to maximum speed
     desired.normalize();
@@ -96,8 +93,7 @@ class Boid {
   
   void render() {
     //Draw a triangle rotated in the direction of velocity
-    float theta = velocity.heading2D() + radians(90);
-    //heading2D() above is now heading() but leaving old syntax until Processing.js catches up
+    float theta = velocity.heading() + radians(90);
     
     fill(200, 100);
     stroke(strokeColor);
@@ -124,11 +120,21 @@ class Boid {
       float margin = 100;
       PVector repel = new PVector();
       
-      if (position.x < -r + margin) repel.x = inverseLerp(0, -r + margin, max(0, position.x));
-      if (position.y < -r + margin) repel.y = inverseLerp(0, -r + margin, max(0, position.y));
-      if (position.x > width+r - margin) repel.x = -1*inverseLerp(width, width+r-margin, min(width, position.x));
-      if (position.y > height+r - margin) repel.y = -1*inverseLerp(height, height+r-margin, min(height, position.y));
-    
+      float t = -1;
+      if (position.x < -r + margin)       t = inverseLerp(0,     -r + margin,       max(0, position.x));
+      if (position.y < -r + margin)       t = inverseLerp(0,     -r + margin,       max(0, position.y));
+      if (position.x > width+r - margin)  t = inverseLerp(width,  width+r-margin,   min(width, position.x));
+      if (position.y > height+r - margin) t = inverseLerp(height, height+r-margin,  min(height, position.y));
+      
+      
+      if (t >= 0) {
+      
+        repel = PVector.sub(FlockingWar.center, position);
+        repel.normalize();
+        repel.mult(t);
+      }
+          
+      
       repel.mult(0.3);
       applyForce(repel);
     }

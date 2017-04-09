@@ -4,16 +4,15 @@ class Boid {
   PVector position;
   PVector velocity;
   PVector acceleration;
-  float r;
-  float maxForce;
+  float size;
+  float force;
   float maxSpeed;
   
   color strokeColor;
   
   Flock flock;
   
-  Boid(float x, float y, color c, Flock owner) {
-    strokeColor = c;
+  Boid(float x, float y, Flock owner) {    
     flock = owner;
     
     acceleration = new PVector(0, 0);
@@ -22,9 +21,11 @@ class Boid {
     velocity = new PVector(cos(angle), sin(angle));
     
     position = new PVector(x, y);
-    r = 2.0;
-    maxSpeed = 2.2;
-    maxForce = 0.04;
+    
+    strokeColor = owner.strokeColor;
+    size = owner.boidSize;
+    maxSpeed = owner.boidMaxSpeed;
+    force = owner.boidForce;
   }
 
   void run() {    
@@ -43,13 +44,13 @@ class Boid {
 
   // We accumulate a new acceleration each time based on three rules
   void flock() {
-    PVector sep = separate(flock.boids, 25);   // Separation
-    PVector ali = align(flock.boids);          // Alignment
-    PVector coh = cohesion(flock.boids, 50);   // Cohesion
+    PVector sep = separate(flock.boids, flock.sepRadius);   // Separation
+    PVector ali = align(flock.boids, flock.aliRadius);      // Alignment
+    PVector coh = cohesion(flock.boids, flock.cohRadius);   // Cohesion
     // Arbitrarily weight these forces
-    sep.mult(1.8);
-    ali.mult(0.8);
-    coh.mult(1.2);
+    sep.mult(flock.sepWeight);
+    ali.mult(flock.aliWeight);
+    coh.mult(flock.cohWeight);
     // Add the force vectors to acceleration
     applyForce(sep);
     applyForce(ali);
@@ -92,7 +93,7 @@ class Boid {
     
     //Reynolds: Steering = Desired - Velocity
     desired.sub(velocity);
-    desired.limit(maxForce);
+    desired.limit(force);
     
     return desired;
   }
@@ -107,9 +108,9 @@ class Boid {
     translate(position.x, position.y);
     rotate(theta);
     beginShape(TRIANGLES);
-    vertex(0, -r*2);
-    vertex(-r, r*2);
-    vertex(r, r*2);
+    vertex(0, -size*2);
+    vertex(-size, size*2);
+    vertex(size, size*2);
     endShape();
     popMatrix();
   }
@@ -117,20 +118,20 @@ class Boid {
   // Wraparound
   void borders(boolean wrap) {
     if(wrap) {
-      if (position.x < -r) position.x = width+r;
-      if (position.y < -r) position.y = height+r;
-      if (position.x > width+r) position.x = -r;
-      if (position.y > height+r) position.y = -r;
+      if (position.x < -size) position.x = width+size;
+      if (position.y < -size) position.y = height+size;
+      if (position.x > width+size) position.x = -size;
+      if (position.y > height+size) position.y = -size;
     }
     else {
       float margin = 100;
       PVector repel = new PVector();
       
       float t = -1;
-      if (position.x < -r + margin)       t = inverseLerp(0,     -r + margin,       max(0, position.x));
-      if (position.y < -r + margin)       t = inverseLerp(0,     -r + margin,       max(0, position.y));
-      if (position.x > width+r - margin)  t = inverseLerp(width,  width+r-margin,   min(width, position.x));
-      if (position.y > height+r - margin) t = inverseLerp(height, height+r-margin,  min(height, position.y));
+      if (position.x < -size + margin)       t = inverseLerp(0,     -size + margin,       max(0, position.x));
+      if (position.y < -size + margin)       t = inverseLerp(0,     -size + margin,       max(0, position.y));
+      if (position.x > width+size - margin)  t = inverseLerp(width,  width+size-margin,   min(width, position.x));
+      if (position.y > height+size - margin) t = inverseLerp(height, height+size-margin,  min(height, position.y));
       
       
       if (t >= 0) {
@@ -168,14 +169,14 @@ class Boid {
   PVector separate (ArrayList<Boid> boids, float radius, boolean weight) {
     
     PVector sum = new PVector(0, 0);
+    PVector sepVec = new PVector(0,0);
     int count = 0;
     // For every boid in the system, check if it's too close
     for (Boid other : boids) {
-      float d = PVector.sub(position, other.position).magSq();      
+      sepVec = PVector.sub(position, other.position); 
+      float d = sepVec.magSq();      
       if ((d > 0) && (d < radius*radius)) {
-        // Calculate vector pointing away from neighbor        
-        PVector sepVec = PVector.sub(position, other.position);        
-        
+        // Calculate vector pointing away from neighbor            
         
         //sepVec.normalize();        
         if(weight) {
@@ -211,7 +212,7 @@ class Boid {
     int num = boids.size();
     for (int i = 0; i < num; i++) {
       float d = PVector.sub(position, boids.get(i).position).magSq();
-      if(d > 0 && d < closestDist*closestDist) {
+      if((d > 0) && d < (closestDist*closestDist)) {
         closestDist = d;
         closest = i;
       }
@@ -235,13 +236,12 @@ class Boid {
   
   //Alignment
   //For every nearby boid in the system, calculate the average velocity
-  PVector align (ArrayList<Boid> boids) {
-    float neighbordist = 50;
+  PVector align (ArrayList<Boid> boids, float radius) {
     PVector sum = new PVector(0, 0);
     int count = 0;
     for (Boid other : boids) {
-      float d = PVector.dist(position, other.position);
-      if ((d > 0) && (d < neighbordist)) {
+      float d = PVector.sub(position, other.position).magSq();
+      if ((d > 0) && (d < radius*radius)) {
         sum.add(other.velocity);
         count++;
       }

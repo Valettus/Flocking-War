@@ -31,16 +31,17 @@ TODO Before putting on GitHub:
 #Toggle avoiding other flocks
 #Toggle border wrapping/repel
 #Random placement of all boids, or place each flock together at start
+#Explosion effect
 
 
 */
 
-int numFlocks = 2;
+int numFlocks = 4;
 int maxBoids = 400;
 Flock[] flocks;
 
 public static PVector center;
-public static float borderWeight = 0.2;
+public static float borderWeight = 0.3;
 
 //--Boid and Flock properties--
 float minSize = 1.5;
@@ -50,7 +51,7 @@ float maxSpeed = 3;
 float minForce = 0.03;
 float maxForce = 0.08;
 
-float minSep = 0.5;
+float minSep = 1;
 float maxSep = 2.5;
 float minAli = 0.5;
 float maxAli = 2;
@@ -58,7 +59,7 @@ float minCoh = 0.5;
 float maxCoh = 4;
 float maxTotalWeight = 4;
 
-float minSepR = 15;
+float minSepR = 25;
 float maxSepR = 40;
 float minAliR = 25;
 float maxAliR = 75;
@@ -97,7 +98,7 @@ void setup() {
 }
 
 void draw() {
-  background(128);
+  background(0);
   
   for(int i = 0; i < numFlocks; i++) {
     flocks[i].run(flocks);

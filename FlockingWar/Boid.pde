@@ -33,7 +33,7 @@ class Boid {
     applyForce(seek(FlockingWar.center).mult(0.8));
     
     move();
-    borders(true);
+    borders(false);
     render();
   }
 

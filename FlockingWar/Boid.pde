@@ -30,10 +30,10 @@ class Boid {
 
   void run() {    
     //Always move toward center
-    applyForce(seek(FlockingWar.center).mult(0.8));
+    applyForce(seek(FlockingWar.center).mult(0.5));
     
     move();
-    borders(false);
+    borders(true);
     render();
   }
 
@@ -145,11 +145,7 @@ class Boid {
       repel.mult(FlockingWar.borderWeight);
       applyForce(repel);
     }
-  }
-  
-  float inverseLerp(float min, float max, float mid) {
-    return 1-((mid - min) / (max - min));
-  }
+  } 
   
   int countWithinRadius(ArrayList<Boid> boids, float radius) {
     radius = radius * radius;

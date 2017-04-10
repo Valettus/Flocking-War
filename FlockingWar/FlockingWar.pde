@@ -41,8 +41,9 @@ Flock[] flocks;
 
 public static PVector center;
 public static float borderWeight = 0.3;
+public static boolean wrap = false;
 
-boolean randomizeProperties = false;
+boolean randomizeProperties = true;
 
 //--Boid and Flock properties--
 float minSize = 1.5;

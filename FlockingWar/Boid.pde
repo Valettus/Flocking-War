@@ -62,7 +62,7 @@ class Boid {
     PVector coh = cohesion(boids, 50);
     
     if(countWithinRadius(boids, 20) > 3) {
-      explosions.addExplosion(position, strokeColor);
+      explosions.addExplosion(position, strokeColor, 4);
       flock.removeBoid(this);
     }
     

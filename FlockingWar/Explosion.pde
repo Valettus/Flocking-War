@@ -1,32 +1,20 @@
 
 class Explosion {
   boolean alive = false;
-  float duration = 500; //milliseconds
+  float _duration = 500; //milliseconds
   float startTime = 0;
-  float size = 25;
+  float _size = 25;
   color fill = 255;
   
-  PVector center;
-  int detail = 3;
-  PVector[] circles;
-  float[] diameters;
+  PVector _pos;
   
-  Explosion() {
-    circles = new PVector[detail];
-    diameters = new float[detail];
-  }
-  
-  void init(PVector pos, color c) {
+  void init(PVector pos, float size, float duration, color c) {
     alive = true;
     startTime = millis();
     
-    center = pos;
-    for(int i = 0; i < detail; i++) {
-      
-      circles[i] = PVector.add(pos, PVector.random2D().mult(size*0.5));
-      println(circles[i]);
-      diameters[i] = random(size * 0.5, size);
-    }
+    _pos = pos;
+    _size = random(size * 0.5, size);
+    _duration = random(duration * 0.8, duration * 1.2);
     
     fill = c;
   }
@@ -35,7 +23,7 @@ class Explosion {
     if(!alive)
       return;
     
-    float t = inverseLerp(startTime + duration, startTime, millis());
+    float t = inverseLerp(startTime + _duration, startTime, millis());
     if(t < 0) {
       alive = false;
     } else {
@@ -46,17 +34,9 @@ class Explosion {
   void render(float t) {
     fill(fill);
     noStroke();
-    //float d = size * sin(PI*lerp(0.6, 0, t));
-    float sin2 = 2 * sin(PI*t);
-    float d = size * sin2;
-    ellipse(center.x, center.y, d, d);
-    for(int i = 0; i < detail; i++) {
-      d = diameters[i] * sin2;
-      ellipse(circles[i].x, circles[i].y, d, d);
-    }
-    //ellipse(center.x, center.y, d, d);
-    d = size * sin2;
-    ellipse(center.x, center.y, d, d);
+    
+    float d = _size * 2 * sin(PI*t);
+    ellipse(_pos.x, _pos.y, d, d);
     
   }
 }
@@ -66,21 +46,30 @@ class ExplosionManager {
   int current = 0;
   int len;
   
-  ExplosionManager(int count) {
-     pool = new Explosion[count];
-     len = count;
+  float size = 25;
+  float duration = 500;
+  
+  ExplosionManager(int poolSize) {
+     pool = new Explosion[poolSize];
+     len = poolSize;
      
      for(int i = 0; i < len; i++) {
        pool[i] = new Explosion(); 
      }
   }
   
-  void addExplosion(PVector pos, color c) {
+  void addExplosion(PVector pos, color c, int detail) {
     current++;
     if(current == len)
       current = 0;
+    Explosion e = pool[current];
     
-    pool[current].init(pos, c);
+    if(detail > 1) {
+      e.init(PVector.add(pos, PVector.random2D().mult(size*0.33)), size, duration, c);
+      addExplosion(pos, c, detail-1);      
+    } else {
+      e.init(pos, size, duration, c);
+    }
   }
   
   void run() {

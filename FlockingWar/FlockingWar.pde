@@ -84,7 +84,7 @@ void setup() {
   center = new PVector(width/2, height/2);
   
   flocks = new Flock[numFlocks];
-  explosions = new ExplosionManager(5);
+  explosions = new ExplosionManager(20);
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
     flocks[i] = initializeFlock(i, maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))));
@@ -115,7 +115,7 @@ void draw() {
 
 // Add a new boid into the System
 void mousePressed() {
-  explosions.addExplosion(new PVector(mouseX, mouseY), 255);
+  explosions.addExplosion(new PVector(mouseX, mouseY), 255, 8);
   //flocks[0].addBoid(mouseX, mouseY);
 }
 

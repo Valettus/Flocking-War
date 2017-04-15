@@ -2,7 +2,7 @@
  * Flocking War
  * Christopher Kaiser
  *
- * -Based on the Flocking example that comes with processing implementated by Daniel Shiffman. 
+ * -Based on the Flocking example that comes with processing implemented by Daniel Shiffman. 
  * --An implementation of Craig Reynold's Boids program to simulate
  * --the flocking behavior of birds. Each boid steers itself based on 
  * --rules of avoidance, alignment, and coherence.
@@ -10,7 +10,7 @@
  */
 
 /*
-TODO Before putting on GitHub:
+TODO:
 #Randomized parameters per flock (stored on flock class, accessed by Boids):
   -Boid
    -*size
@@ -22,15 +22,15 @@ TODO Before putting on GitHub:
 #Ability to modify parameters at runtime
   -Above parameters
   -number of flocks (after reset)
-#Reset simulation without restart.
+##Reset simulation without restart.
 #Actual aggressive functionality
 -When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
 -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
-#Toggle hostility
+##Toggle hostility
 #Toggle avoiding other flocks
 #Toggle border wrapping/repel
 #Random placement of all boids, or place each flock together at start
-#Explosion effect
+##Explosion effect
 #Toggle randomness
 
 */
@@ -38,6 +38,7 @@ TODO Before putting on GitHub:
 int numFlocks = 3;
 int maxBoids = 400;
 Flock[] flocks;
+ExplosionManager explosions;
 
 public static PVector center;
 public static float borderWeight = 0.3;
@@ -83,6 +84,7 @@ void setup() {
   center = new PVector(width/2, height/2);
   
   flocks = new Flock[numFlocks];
+  explosions = new ExplosionManager(5);
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
     flocks[i] = initializeFlock(i, maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))));
@@ -106,12 +108,15 @@ void draw() {
     flocks[i].run(flocks);
   }
   
+  explosions.run();
+  
   text("FPS: " + frameRate, 10, 20);
 }
 
 // Add a new boid into the System
 void mousePressed() {
-  flocks[0].addBoid(mouseX, mouseY);
+  explosions.addExplosion(new PVector(mouseX, mouseY), 255);
+  //flocks[0].addBoid(mouseX, mouseY);
 }
 
 Flock initializeFlock(int index, int count, color c) {

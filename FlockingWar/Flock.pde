@@ -71,12 +71,13 @@ class Flock {
   }
   
   void initializeBoids(int count) {
-    flockSize = count;
+    
     boids = new ArrayList<Boid>(flockSize);
     
-    for(int i = 0; i < flockSize; i++) {
+    for(int i = 0; i < count; i++) {
        addBoid(random(width), random(height));
     }
+    flockSize = count;
     
     initialized = true;
   }
@@ -93,12 +94,13 @@ class Flock {
         }
       }
       
-      if(i < flockSize) { boids.get(i).run(); }
+      if(i < flockSize) { boids.get(i).update(); }
     }
   }
 
   void addBoid(float x, float y) {
     boids.add(new Boid(x,y, this));
+    flockSize++;
   }
   
   void removeBoid(Boid boid) {

@@ -28,7 +28,7 @@ class Boid {
     force = owner.boidForce;
   }
 
-  void run() {    
+  void update() {    
     //Always move toward center
     applyForce(seek(FlockingWar.center).mult(0.5));
     
@@ -62,7 +62,8 @@ class Boid {
     PVector coh = cohesion(boids, 50);
     
     if(countWithinRadius(boids, 20) > 3) {
-       flock.removeBoid(this);
+      explosions.addExplosion(position, strokeColor);
+      flock.removeBoid(this);
     }
     
     sep.mult(2.0);
@@ -128,10 +129,10 @@ class Boid {
       PVector repel = new PVector();
       
       float t = -1;
-      if (position.x < -size + margin)       t = inverseLerp(0,     -size + margin,       max(0, position.x));
-      if (position.y < -size + margin)       t = inverseLerp(0,     -size + margin,       max(0, position.y));
-      if (position.x > width+size - margin)  t = inverseLerp(width,  width+size-margin,   min(width, position.x));
-      if (position.y > height+size - margin) t = inverseLerp(height, height+size-margin,  min(height, position.y));
+      if (position.x < margin)          t = inverseLerp(margin, 0,         max(0, position.x));
+      if (position.y < margin)          t = inverseLerp(margin, 0,         max(0, position.y));
+      if (position.x > width - margin)  t = inverseLerp(width-margin,  width,   min(width, position.x));
+      if (position.y > height - margin) t = inverseLerp(height-margin, height,  min(height, position.y));
       
       
       if (t >= 0) {

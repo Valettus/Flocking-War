@@ -11,29 +11,29 @@
 
 /*
 TODO:
-#Randomized parameters per flock (stored on flock class, accessed by Boids):
-  -Boid
-   -*size
-   -*maxSpeed
-   -*maxForce
-   -*weight on all flocking functions in flock() and otherFlock()
-   -*radius on all flocking functions in flock() and otherFlock()
-   -*color
-#Ability to modify parameters at runtime
-  -Above parameters
-  -number of flocks (after reset)
-##Reset simulation without restart.
-#Actual aggressive functionality
--When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
--Flanking/surrounding (this may not be possible without managing behavior at the flock level)
-##Toggle hostility
-#Toggle avoiding other flocks
-#Toggle border wrapping/repel
-#Random placement of all boids, or place each flock together at start
-##Explosion effect
-#Toggle randomness
-
-*/
+ #Randomized parameters per flock (stored on flock class, accessed by Boids):
+ -Boid
+ -*size
+ -*maxSpeed
+ -*maxForce
+ -*weight on all flocking functions in flock() and otherFlock()
+ -*radius on all flocking functions in flock() and otherFlock()
+ -*color
+ #Ability to modify parameters at runtime
+ -Above parameters
+ -number of flocks (after reset)
+ ##Reset simulation without restart.
+ #Actual aggressive functionality
+ -When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
+ -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
+ ##Toggle hostility
+ #Toggle avoiding other flocks
+ #Toggle border wrapping/repel
+ #Random placement of all boids, or place each flock together at start
+ ##Explosion effect
+ #Toggle randomness
+ 
+ */
 
 int numFlocks = 3;
 int maxBoids = 400;
@@ -74,7 +74,7 @@ float maxOtherSepR = 75;
 float minOtherCohR = 25;
 float maxOtherCohR = 75;
 float minOtherSep = 1;
-float maxOtherSep = 3;
+float maxOtherSep = 1;
 float minOtherCoh = -2;
 float maxOtherCoh = -0.5;
 //-----
@@ -82,67 +82,68 @@ float maxOtherCoh = -0.5;
 void setup() {
   size(1280, 720);
   center = new PVector(width/2, height/2);
-  
+
   flocks = new Flock[numFlocks];
   explosions = new ExplosionManager(20);
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
-    flocks[i] = initializeFlock(i, maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))));
+    flocks[i] = initializeFlock(i, maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)), 255 * (1-((float)i/(numFlocks-1)))));
     /*
     flocks[i].setBoidProperties(color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))),
-                                random(minSize, maxSize), //size
-                                random(minSpeed, maxSpeed), //speed
-                                random(minForce, maxForce)); //force
-    flocks[i].setFlockingWeights(random(minSep, maxSep), random(minAli, maxAli), random(minCoh, maxCoh), maxTotalWeight);
-    flocks[i].setFlockingRadius(random(minSepR, maxSepR), random(minAliR, maxAliR), random(minCohR, maxCohR));
-    flocks[i].setFlockAvoidanceProperties(random(minOtherSep, maxOtherSep), random(minOtherCoh,maxOtherCoh),
-                                          random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
-    flocks[i].initializeBoids(maxBoids/numFlocks);*/
+     random(minSize, maxSize), //size
+     random(minSpeed, maxSpeed), //speed
+     random(minForce, maxForce)); //force
+     flocks[i].setFlockingWeights(random(minSep, maxSep), random(minAli, maxAli), random(minCoh, maxCoh), maxTotalWeight);
+     flocks[i].setFlockingRadius(random(minSepR, maxSepR), random(minAliR, maxAliR), random(minCohR, maxCohR));
+     flocks[i].setFlockAvoidanceProperties(random(minOtherSep, maxOtherSep), random(minOtherCoh,maxOtherCoh),
+     random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
+     flocks[i].initializeBoids(maxBoids/numFlocks);*/
   }
 }
 
 void draw() {
   background(0);
-  
-  for(int i = 0; i < numFlocks; i++) {
+
+  for (int i = 0; i < numFlocks; i++) {
     flocks[i].run(flocks);
   }
-  
+
   explosions.run();
-  
+
   text("FPS: " + frameRate, 10, 20);
 }
 
 // Add a new boid into the System
 void mousePressed() {
-  explosions.addExplosion(new PVector(mouseX, mouseY), 255, 8);
+  explosions.addExplosion(new PVector(mouseX, mouseY), 30, 500, 255, 4);
+  explosions.addSpark(new PVector(mouseX, mouseY), 30, 255, 10);
   //flocks[0].addBoid(mouseX, mouseY);
 }
 
 Flock initializeFlock(int index, int count, color c) {
   Flock flock = new Flock(index);
-  
-  if(randomizeProperties) {
-    flock.setBoidProperties(c,
-                            random(minSize,  maxSize), //size
-                            random(minSpeed, maxSpeed), //speed
-                            random(minForce, maxForce)); //force
-    flock.setFlockingWeights(random(minSep,  maxSep),  random(minAli,  maxAli),  random(minCoh,  maxCoh), maxTotalWeight);
+
+  if (randomizeProperties) {
+    flock.setBoidProperties(c, 
+      random(minSize, maxSize), //size
+      random(minSpeed, maxSpeed), //speed
+      random(minForce, maxForce)); //force
+    flock.setFlockingWeights(random(minSep, maxSep), random(minAli, maxAli), random(minCoh, maxCoh), maxTotalWeight);
     flock.setFlockingRadius (random(minSepR, maxSepR), random(minAliR, maxAliR), random(minCohR, maxCohR));
-    flock.setFlockAvoidanceProperties(random(minOtherSep,  maxOtherSep),  random(minOtherCoh,  maxOtherCoh),
-                                      random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
+    flock.setFlockAvoidanceProperties(random(minOtherSep, maxOtherSep), random(minOtherCoh, maxOtherCoh), 
+      random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
     flock.initializeBoids(maxBoids/numFlocks);
   } else {
-    flock.setBoidProperties(c,
-                            average(minSize,  maxSize), //size
-                            average(minSpeed, maxSpeed), //speed
-                            average(minForce, maxForce)); //force
-    flock.setFlockingWeights(average(minSep, maxSep),  average(minAli,  maxAli),  average(minCoh,  maxCoh), maxTotalWeight);
+    flock.setBoidProperties(c, 
+      average(minSize, maxSize), //size
+      average(minSpeed, maxSpeed), //speed
+      average(minForce, maxForce)); //force
+    flock.setFlockingWeights(average(minSep, maxSep), average(minAli, maxAli), average(minCoh, maxCoh), maxTotalWeight);
     flock.setFlockingRadius(average(minSepR, maxSepR), average(minAliR, maxAliR), average(minCohR, maxCohR));
-    flock.setFlockAvoidanceProperties(average(minOtherSep,  maxOtherSep),  average(minOtherCoh,  maxOtherCoh),
-                                      average(minOtherSepR, maxOtherSepR), average(minOtherCohR, maxOtherCohR));
+    flock.setFlockAvoidanceProperties(average(minOtherSep, maxOtherSep), average(minOtherCoh, maxOtherCoh), 
+      average(minOtherSepR, maxOtherSepR), average(minOtherCohR, maxOtherCohR));
     flock.initializeBoids(count);
   }
-  
+
   return flock;
 }

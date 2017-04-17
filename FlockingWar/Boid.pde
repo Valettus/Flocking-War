@@ -46,7 +46,7 @@ class Boid {
   void flock() {
     PVector sep = separate(flock.boids, flock.sepRadius);   // Separation
     PVector ali = align(flock.boids, flock.aliRadius);      // Alignment
-    PVector coh = cohesion(flock.boids, flock.cohRadius);   // Cohesion
+    PVector coh = cohesion(flock.boids, flock.cohRadius, true);   // Cohesion
     // Arbitrarily weight these forces
     sep.mult(flock.sepWeight);
     ali.mult(flock.aliWeight);
@@ -66,12 +66,16 @@ class Boid {
     }
 
     PVector sep = separate(boids, flock.sepOtherRadius, true, false);
-    PVector coh = cohesion(boids, flock.cohOtherRadius);
-
+    PVector coh = cohesion(boids, flock.cohOtherRadius, false);
+    PVector att = getAttackVector(boids, 100);
+    
     sep.mult(flock.sepOtherWeight);
     coh.mult(flock.cohOtherWeight);
-    //applyForce(sep);
+    att.mult(att, 10);
+    
+    applyForce(sep);
     applyForce(coh);
+    applyForce(att);
   }
 
   // Method to update position
@@ -107,7 +111,11 @@ class Boid {
   void render() {
     //Draw a triangle rotated in the direction of velocity
     float theta = velocity.heading() + radians(90);
-
+    
+    float f = inverseLerp(maxSpeed*maxSpeed, 0, velocity.magSq()); 
+    float bLength = size * (2.5 - f);
+    float bWidth = size * lerp(0.7, 1.3, f);
+    
     fill(strokeColor, 50);
     stroke(strokeColor);
     strokeWeight(1);
@@ -115,9 +123,9 @@ class Boid {
     translate(position.x, position.y);
     rotate(theta);
     beginShape(TRIANGLES);
-    vertex(0, -size*2);
-    vertex(-size, size*2);
-    vertex(size, size*2);
+    vertex(0, -bLength);
+    vertex(-bWidth, bLength);
+    vertex(bWidth, bLength);
     endShape();
     popMatrix();
   }
@@ -165,7 +173,40 @@ class Boid {
     }
     return count;
   }
+  
+  PVector getAttackVector(ArrayList<Boid> boids, float radius) {
+    int num = boids.size();
+    if(num == 0)
+      return new PVector (0,0);
+    
+    int friendlyCount = countWithinRadius(flock.boids, radius);
+    
+    radius = radius*radius;
+    
+    int enemyCount = 0;
+    int closest = 0;
+    float closestDist = radius;
+    
+    for (int i = 0; i < num; i++) {
+      float d = PVector.sub(position, boids.get(i).position).magSq();
+      
+      if ((d > 0) && (d < radius)) {
+        if (d < closestDist) {
+          closestDist = d;
+          closest = i;
+        }
+        
+        enemyCount++;
+      }
+    }
+    if (friendlyCount > enemyCount) {
+      //Steer towards the closest enemy
+      return seek(boids.get(closest).position);
+    }
 
+    return new PVector(0, 0);
+  }
+  
   //Separation
   //Calculate average steering vector away from nearby boids  
   PVector separate (ArrayList<Boid> boids, float radius, boolean weightDir, boolean weightDist) {
@@ -203,7 +244,7 @@ class Boid {
         distFactor /= (float)count; //Average
         distFactor = inverseLerp(0, radius, distFactor); //Get percentage of max distance
         distFactor = 1 + (distFactor); //start multiplier at 1 (range of 1-2).      
-        return calcSteer(sum, distFactor).mult(0.65);
+        return calcSteer(sum, distFactor).mult(0.9);
       } else {
         return calcSteer(sum);
       }
@@ -217,20 +258,26 @@ class Boid {
 
   //Cohesion
   //For the average position of all nearby boids, calculate steering vector towards that position
-  PVector cohesion (ArrayList<Boid> boids, float radius) {
+  PVector cohesion (ArrayList<Boid> boids, float radius, boolean seek) {
 
     PVector sum = new PVector(0, 0);
     int count = 0;
     int closest = 0;
     float closestDist = 999999;
     int num = boids.size();
+    
+    radius = radius*radius;
+    
     for (int i = 0; i < num; i++) {
       float d = PVector.sub(position, boids.get(i).position).magSq();
-      if ((d > 0) && d < (closestDist*closestDist)) {
-        closestDist = d;
-        closest = i;
+      if(seek) {
+        if ((d > 0) && d < (closestDist*closestDist)) {
+          closestDist = d;
+          closest = i;
+        }
       }
-      if ((d > 0) && (d < radius*radius)) {
+      
+      if ((d > 0) && (d < radius)) {
         sum.add(boids.get(i).position); //Add position
         count++;
       }
@@ -239,9 +286,9 @@ class Boid {
       sum.div(count);
       //Steer towards the position
       return calcSteer(sum.sub(position));
-    } else if (num > 1) {
-      //return new PVector(0, 0);
-      return calcSteer(PVector.sub(boids.get(closest).position, position));
+    } else if (seek && num > 1) {
+      //Steer toward the closest friendly, if none are in range
+      return seek(boids.get(closest).position);
     }
 
     return new PVector(0, 0);
@@ -252,9 +299,12 @@ class Boid {
   PVector align (ArrayList<Boid> boids, float radius) {
     PVector sum = new PVector(0, 0);
     int count = 0;
+    
+    radius = radius*radius;
+    
     for (Boid other : boids) {
       float d = PVector.sub(position, other.position).magSq();
-      if ((d > 0) && (d < radius*radius)) {
+      if ((d > 0) && (d < radius)) {
         sum.add(other.velocity);
         count++;
       }

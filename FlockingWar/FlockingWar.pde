@@ -23,15 +23,16 @@ TODO:
  -Above parameters
  -number of flocks (after reset)
  ##Reset simulation without restart.
- #Actual aggressive functionality
+ ##Actual aggressive functionality
  -When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
  -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
  ##Toggle hostility
  #Toggle avoiding other flocks
  #Toggle border wrapping/repel
- #Random placement of all boids, or place each flock together at start
+ #Random placement of all boids, or place each flock together (eg, in a corner) at start
  ##Explosion effect
  #Toggle randomness
+ ##Sep should get stronger when more are in proximity.
  
  */
 
@@ -74,7 +75,7 @@ float maxOtherSepR = 75;
 float minOtherCohR = 25;
 float maxOtherCohR = 75;
 float minOtherSep = 1;
-float maxOtherSep = 1;
+float maxOtherSep = 3;
 float minOtherCoh = -2;
 float maxOtherCoh = -0.5;
 //-----
@@ -102,7 +103,7 @@ void setup() {
 }
 
 void draw() {
-  background(0);
+  background(64);
 
   for (int i = 0; i < numFlocks; i++) {
     flocks[i].run(flocks);
@@ -116,7 +117,7 @@ void draw() {
 // Add a new boid into the System
 void mousePressed() {
   explosions.addExplosion(new PVector(mouseX, mouseY), 30, 500, 255, 4);
-  explosions.addSpark(new PVector(mouseX, mouseY), 30, 255, 10);
+  explosions.addSpark(new PVector(mouseX, mouseY), 20, 255, 10);
   //flocks[0].addBoid(mouseX, mouseY);
 }
 

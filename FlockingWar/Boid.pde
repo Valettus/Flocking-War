@@ -58,18 +58,19 @@ class Boid {
   }
 
   void otherFlock(ArrayList<Boid> boids) {
-    PVector sep = separate(boids, 50);
-    PVector coh = cohesion(boids, 50);
-
-    if (countWithinRadius(boids, 30) > 3) {
-      explosions.addExplosion(position, 12, 400, strokeColor, 4);
-      explosions.addSpark(position, PVector.mult(velocity, 10), strokeColor, 3);
+    if (countWithinRadius(boids, 20) > 3) {
+      explosions.addExplosion(position, 12, 500, strokeColor, 3);
+      PVector ali = align(boids, 20).mult(250); //Find average velocity of attackers
+      explosions.addSpark(position, ali, strokeColor, 2);
       flock.removeBoid(this);
     }
 
-    sep.mult(2.0);
-    coh.mult(-1);
-    applyForce(sep);
+    PVector sep = separate(boids, flock.sepOtherRadius, true, false);
+    PVector coh = cohesion(boids, flock.cohOtherRadius);
+
+    sep.mult(flock.sepOtherWeight);
+    coh.mult(flock.cohOtherWeight);
+    //applyForce(sep);
     applyForce(coh);
   }
 
@@ -87,6 +88,9 @@ class Boid {
     return calcSteer(PVector.sub(target, position));
   }
 
+  PVector calcSteer(PVector desired, float multiplier) {
+    return calcSteer(desired).mult(multiplier);
+  }
   PVector calcSteer(PVector desired) {
 
     //Scale to maximum speed
@@ -164,37 +168,51 @@ class Boid {
 
   //Separation
   //Calculate average steering vector away from nearby boids  
-  PVector separate (ArrayList<Boid> boids, float radius, boolean weight) {
+  PVector separate (ArrayList<Boid> boids, float radius, boolean weightDir, boolean weightDist) {
 
     PVector sum = new PVector(0, 0);
     PVector sepVec = new PVector(0, 0);
+    float distFactor = 0;
     int count = 0;
+    
+    radius = radius*radius; //Working with all squared numbers to avoid the sqrt() function
+    
     // For every boid in the system, check if it's too close
     for (Boid other : boids) {
       sepVec = PVector.sub(position, other.position); 
       float d = sepVec.magSq();      
-      if ((d > 0) && (d < radius*radius)) {
+      if ((d > 0) && (d < radius)) {
         // Calculate vector pointing away from neighbor            
 
         //sepVec.normalize();        
-        if (weight) {
-          sepVec.div(d);// Weight by distance
-        }     
+        if (weightDir) {
+          sepVec.div(d);//Weight direction by distance
+        }
+        distFactor += (radius - d); //For weighting force by distance
 
-        sum.add(sepVec);        
-        count++; // Keep track of how many
+        sum.add(sepVec);
+        count++; //Keep track of how many are in range
       }
     }
-    // Average -- divide by how many
-    if (count > 0) {
-      sum.div((float)count).normalize();  
-      return calcSteer(sum);
+
+    if (count > 0) {      
+      // Average
+      sum.div((float)count);     
+
+      if (weightDist) {
+        distFactor /= (float)count; //Average
+        distFactor = inverseLerp(0, radius, distFactor); //Get percentage of max distance
+        distFactor = 1 + (distFactor); //start multiplier at 1 (range of 1-2).      
+        return calcSteer(sum, distFactor).mult(0.65);
+      } else {
+        return calcSteer(sum);
+      }
     } else {
       return sum;
     }
   }
   PVector separate(ArrayList<Boid> boids, float radius) {
-    return separate(boids, radius, true);
+    return separate(boids, radius, true, true);
   }
 
   //Cohesion

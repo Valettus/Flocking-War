@@ -59,7 +59,7 @@ class Spark {
   boolean _alive = false;
   PVector _pos;
   PVector _vel;  
-  float _damp = 0.9;
+  float _damp = 0.95;
   color _color;
 
   void init(PVector pos, PVector velocity, color c) {
@@ -95,7 +95,7 @@ class Spark {
       _alive = false;
     } else {
 
-      PVector p1 = PVector.sub(_pos, _vel);
+      PVector p1 = PVector.sub(_pos, PVector.mult(_vel, 2));
       PVector p2 = PVector.add(_pos, _vel);
       render(p1, p2);
       _pos = p2;
@@ -106,7 +106,7 @@ class Spark {
     stroke(_color);
     strokeWeight(1);
     line(p1.x, p1.y, p2.x, p2.y);
-    strokeWeight(3);
+    strokeWeight(2);
     line(_pos.x, _pos.y, p2.x, p2.y);
   }
 }

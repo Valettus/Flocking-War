@@ -25,15 +25,16 @@ TODO:
  ##Reset simulation without restart.
  ##Actual aggressive functionality
  -When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
+ -Factor in boid 'density' when deciding to attack. Rather than, or in addition to, relative count.
  -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
  ##Toggle hostility
  #Toggle avoiding other flocks
  #Toggle border wrapping/repel
  #Random placement of all boids, or place each flock together (eg, in a corner) at start
- ##Explosion effect
+ ##*Explosion effect
  #Toggle randomness
  ##Sep should get stronger when more are in proximity.
- 
+ ##
  */
 
 int numFlocks = 3;
@@ -81,7 +82,7 @@ float maxOtherCoh = -0.5;
 //-----
 
 void setup() {
-  size(1280, 720);
+  size(1280, 720); //<>//
   center = new PVector(width/2, height/2);
 
   flocks = new Flock[numFlocks];
@@ -110,7 +111,8 @@ void draw() {
   }
 
   explosions.run();
-
+  
+  fill(128);
   text("FPS: " + frameRate, 10, 20);
 }
 

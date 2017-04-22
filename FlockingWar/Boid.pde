@@ -11,7 +11,14 @@ class Boid {
   color strokeColor;
 
   Flock flock;
-
+  
+  byte attacking = 0;
+  
+  //Stored from flocking functions
+  PVector cohAverage;
+  int friendlyCount = -1;
+  int attackerCount = 0;
+  
   Boid(float x, float y, Flock owner) {    
     flock = owner;
 
@@ -26,15 +33,21 @@ class Boid {
     size = owner.boidSize;
     maxSpeed = owner.boidMaxSpeed;
     force = owner.boidForce;
+    
+    cohAverage = new PVector(0,0);
   }
 
   void update() {    
     //Always move toward center
-    applyForce(seek(FlockingWar.center).mult(0.5));
+    //applyForce(seek(FlockingWar.center).mult(0.5));
 
     move();
     borders(FlockingWar.wrap);
     render();
+    
+    friendlyCount = -1;
+    attackerCount = 0;
+    attacking--;
   }
 
   void applyForce(PVector force) {
@@ -44,40 +57,59 @@ class Boid {
 
   // We accumulate a new acceleration each time based on three rules
   void flock() {
-    PVector sep = separate(flock.boids, flock.sepRadius);   // Separation
+    //PVector sep = separate(flock.boids, flock.sepRadius);   // Separation
     PVector ali = align(flock.boids, flock.aliRadius);      // Alignment
     PVector coh = cohesion(flock.boids, flock.cohRadius, true);   // Cohesion
     // Arbitrarily weight these forces
-    sep.mult(flock.sepWeight);
+    //sep.mult(flock.sepWeight);
     ali.mult(flock.aliWeight);
     coh.mult(flock.cohWeight);
     // Add the force vectors to acceleration
-    applyForce(sep);
+    //applyForce(sep);
     applyForce(ali);
     applyForce(coh);
+    
+    if(attacking <= 0) {
+      applyForce(separate(flock.boids, flock.sepRadius).mult(flock.sepWeight));
+    } else {
+      applyForce(separate(flock.boids, 7).mult(2));
+    }
   }
 
   void otherFlock(ArrayList<Boid> boids) {
-    if (countWithinRadius(boids, 20) > 3) {
+    if (countWithinRadius(boids, 15) > 3) {
       explosions.addExplosion(position, 12, 500, strokeColor, 3);
-      PVector ali = align(boids, 20).mult(250); //Find average velocity of attackers
+      PVector ali = align(boids, 20).mult(250); //Find average velocity of attackers for direction of explosion
       explosions.addSpark(position, ali, strokeColor, 2);
       flock.removeBoid(this);
     }
-
-    PVector sep = separate(boids, flock.sepOtherRadius, true, false);
-    PVector coh = cohesion(boids, flock.cohOtherRadius, false);
-    PVector att = getAttackVector(boids, 100);
     
-    sep.mult(flock.sepOtherWeight);
-    coh.mult(flock.cohOtherWeight);
-    att.mult(att, 10);
+    PVector att = getAttackVector(boids, 100, false);
+    if(att.x == 0 && att.y == 0) {
+      PVector sep = separate(boids, flock.sepOtherRadius, true, false);
+      sep.mult(flock.sepOtherWeight);
+      applyForce(sep);
+    } else {
+      att.mult(1.5);
+      applyForce(att);
+      attacking = 5;
+    }
     
-    applyForce(sep);
-    applyForce(coh);
-    applyForce(att);
+    
+    
+    //PVector coh = cohesion(boids, flock.cohOtherRadius, false);
+    //coh.mult(flock.cohOtherWeight); 
+      
+    
+    //applyForce(coh);
+    
   }
-
+  
+  void addAttacker(PVector attackerPos) {
+    applyForce(flee(attackerPos).mult(0.3));
+    attackerCount++;
+  }
+  
   // Method to update position
   void move() {
     velocity.add(acceleration);
@@ -90,6 +122,10 @@ class Boid {
 
   PVector seek(PVector target) {
     return calcSteer(PVector.sub(target, position));
+  }
+  
+  PVector flee(PVector target) {
+    return calcSteer(PVector.sub(position, target));
   }
 
   PVector calcSteer(PVector desired, float multiplier) {
@@ -174,12 +210,14 @@ class Boid {
     return count;
   }
   
-  PVector getAttackVector(ArrayList<Boid> boids, float radius) {
+  PVector getAttackVector(ArrayList<Boid> boids, float radius, boolean group) {
     int num = boids.size();
     if(num == 0)
       return new PVector (0,0);
     
-    int friendlyCount = countWithinRadius(flock.boids, radius);
+    //friendlyCount will be -1 if it has not been calculated this frame
+    if(friendlyCount == -1)
+      friendlyCount = countWithinRadius(flock.boids, radius);
     
     radius = radius*radius;
     
@@ -188,22 +226,47 @@ class Boid {
     float closestDist = radius;
     
     for (int i = 0; i < num; i++) {
-      float d = PVector.sub(position, boids.get(i).position).magSq();
+      float d;
+      if(group)
+        d = PVector.sub(cohAverage, boids.get(i).position).magSq();
+      else
+        d = PVector.sub(position, boids.get(i).position).magSq();
       
       if ((d > 0) && (d < radius)) {
         if (d < closestDist) {
           closestDist = d;
-          closest = i;
+          closest = i;          
         }
         
-        enemyCount++;
+        enemyCount++;      
       }
     }
-    if (friendlyCount > enemyCount) {
-      //Steer towards the closest enemy
-      return seek(boids.get(closest).position);
+    
+    if(enemyCount > 0) {
+      if (friendlyCount > (enemyCount + attackerCount)) {
+        /*
+        PVector c = boids.get(closest).position;
+        fill(strokeColor);
+        stroke(strokeColor);
+        strokeWeight(3);
+        ellipse(c.x, c.y, 10,10);
+        
+        if(group)
+          line(cohAverage.x, cohAverage.y, c.x, c.y);
+        else
+          line(position.x, position.y, c.x, c.y);
+        
+        println("Index-" + closest + " E-" + (enemyCount + attackerCount) + " F-" + friendlyCount);
+        */
+        //Steer towards the closest enemy
+        boids.get(closest).addAttacker(this.position);
+        return seek(boids.get(closest).position);
+      }
     }
-
+    
+    if(attackerCount > 0)
+      println(attackerCount);
+    
     return new PVector(0, 0);
   }
   
@@ -259,19 +322,21 @@ class Boid {
   //Cohesion
   //For the average position of all nearby boids, calculate steering vector towards that position
   PVector cohesion (ArrayList<Boid> boids, float radius, boolean seek) {
-
+  
+    radius = radius*radius;
+    
     PVector sum = new PVector(0, 0);
     int count = 0;
     int closest = 0;
-    float closestDist = 999999;
+    float closestDist = radius;
     int num = boids.size();
     
-    radius = radius*radius;
+    
     
     for (int i = 0; i < num; i++) {
       float d = PVector.sub(position, boids.get(i).position).magSq();
       if(seek) {
-        if ((d > 0) && d < (closestDist*closestDist)) {
+        if ((d > 0) && d < (closestDist)) {
           closestDist = d;
           closest = i;
         }
@@ -285,6 +350,7 @@ class Boid {
     if (count > 0) {
       sum.div(count);
       //Steer towards the position
+      cohAverage = sum.copy();
       return calcSteer(sum.sub(position));
     } else if (seek && num > 1) {
       //Steer toward the closest friendly, if none are in range

@@ -108,7 +108,7 @@ class Flock {
   }
 
   void removeBoid(Boid boid) {
-    println("Removed Boid " + "(" + boid.position + ") " + (flockSize-1));
+    //println("Removed Boid " + "(" + boid.position + ") " + (flockSize-1));
     boids.remove(boid);
     flockSize--;
   }

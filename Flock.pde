@@ -1,4 +1,3 @@
-// The Flock (a list of Boid objects)
 
 class Flock {
   private ArrayList<Boid> boids; // An ArrayList for all the boids
@@ -108,7 +107,6 @@ class Flock {
   }
 
   void removeBoid(Boid boid) {
-    //println("Removed Boid " + "(" + boid.position + ") " + (flockSize-1));
     boids.remove(boid);
     flockSize--;
   }

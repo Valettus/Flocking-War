@@ -11,30 +11,21 @@
 
 /*
 TODO:
- #*Randomized parameters per flock (stored on flock class, accessed by Boids):
- -Boid
- -*size
- -*maxSpeed
- -*maxForce
- -*weight on all flocking functions in flock() and otherFlock()
- -*radius on all flocking functions in flock() and otherFlock()
- -*color
- -Ability to modify parameters at runtime
- -Above parameters
- -number of flocks (after reset)
- ##Reset simulation without restart.
- ##Actual aggressive functionality
- -When a higher percentage (parameter) of friendlies are in range, move toward the enemies rather than away
- -Factor in boid 'density' when deciding to attack. Rather than, or in addition to, relative count.
- -Flanking/surrounding (this may not be possible without managing behavior at the flock level)
- ##Toggle hostility
+ #Ability to modify parameters at runtime
+ --Above parameters
+ --number of flocks (after reset)
+ #Reset simulation without restart.
+ #Flanking/surrounding (this may not be possible without managing behavior at the flock level)
+ #Toggle hostility
  #Toggle avoiding other flocks
  #Toggle border wrapping/repel
  #Random placement of all boids, or place each flock together (eg, in a corner) at start
- ##*Explosion effect
  #Toggle randomness
- ##*Sep should get stronger when more are in proximity.
- ##
+ #Implement deltaTime
+ #Experiment with removing Boid.calcSteer and replace with simple velocity, acceleration, and damping.
+ --Every property would need to be re-tuned to get good behavior again.
+ --But, if the flocking still works with this change, it would remove several vector operations per boid per frame, including normalize().
+ #
  */
 
 int numFlocks = 2;
@@ -45,6 +36,7 @@ ExplosionManager explosions;
 public static PVector center;
 public static float borderWeight = 0.2;
 public static boolean wrap = false;
+public static float deltaTime = 16.667;
 
 boolean randomizeProperties = true;
 
@@ -90,16 +82,6 @@ void setup() {
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
     flocks[i] = initializeFlock(i, maxBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)), 255 * (1-((float)i/(numFlocks-1)))));
-    /*
-    flocks[i].setBoidProperties(color(random(255), 255 * ((float)i/(numFlocks-1)),255 * (1-((float)i/(numFlocks-1)))),
-     random(minSize, maxSize), //size
-     random(minSpeed, maxSpeed), //speed
-     random(minForce, maxForce)); //force
-     flocks[i].setFlockingWeights(random(minSep, maxSep), random(minAli, maxAli), random(minCoh, maxCoh), maxTotalWeight);
-     flocks[i].setFlockingRadius(random(minSepR, maxSepR), random(minAliR, maxAliR), random(minCohR, maxCohR));
-     flocks[i].setFlockAvoidanceProperties(random(minOtherSep, maxOtherSep), random(minOtherCoh,maxOtherCoh),
-     random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
-     flocks[i].initializeBoids(maxBoids/numFlocks);*/
   }
 }
 
@@ -116,11 +98,13 @@ void draw() {
   text("FPS: " + frameRate, 10, 20);
 }
 
-// Add a new boid into the System
+void keyPressed() {
+   
+}
+
 void mousePressed() {
   explosions.addExplosion(new PVector(mouseX, mouseY), 30, 500, 255, 4);
   explosions.addSpark(new PVector(mouseX, mouseY), 20, 255, 10);
-  //flocks[0].addBoid(mouseX, mouseY);
 }
 
 Flock initializeFlock(int index, int count, color c) {

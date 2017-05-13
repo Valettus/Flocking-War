@@ -80,6 +80,17 @@ class Flock {
 
     initialized = true;
   }
+  void initializeBoids(int count, PVector position) {
+
+    boids = new ArrayList<Boid>(flockSize);
+
+    for (int i = 0; i < count; i++) {
+      addBoid(position.x, position.y);
+    }
+    flockSize = count;
+
+    initialized = true;
+  }
 
   void run(Flock[] allFlocks) {
 

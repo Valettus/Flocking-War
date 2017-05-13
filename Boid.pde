@@ -84,7 +84,7 @@ class Boid {
       flock.removeBoid(this);
     }
     
-    PVector att = getAttackVector(boids, 100, false);
+    PVector att = getAttackVector(boids, 100, true);
     if(att.x == 0 && att.y == 0) {
       PVector sep = separate(boids, flock.sepOtherRadius, true, false);
       sep.mult(flock.sepOtherWeight);
@@ -263,9 +263,6 @@ class Boid {
         return seek(boids.get(closest).position);
       }
     }
-    
-    if(attackerCount > 0)
-      println(attackerCount);
     
     return new PVector(0, 0);
   }

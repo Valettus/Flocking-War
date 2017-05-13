@@ -11,7 +11,7 @@
 
 /*
 TODO:
- #Randomized parameters per flock (stored on flock class, accessed by Boids):
+ #*Randomized parameters per flock (stored on flock class, accessed by Boids):
  -Boid
  -*size
  -*maxSpeed
@@ -19,7 +19,7 @@ TODO:
  -*weight on all flocking functions in flock() and otherFlock()
  -*radius on all flocking functions in flock() and otherFlock()
  -*color
- #Ability to modify parameters at runtime
+ -Ability to modify parameters at runtime
  -Above parameters
  -number of flocks (after reset)
  ##Reset simulation without restart.
@@ -33,17 +33,17 @@ TODO:
  #Random placement of all boids, or place each flock together (eg, in a corner) at start
  ##*Explosion effect
  #Toggle randomness
- ##Sep should get stronger when more are in proximity.
+ ##*Sep should get stronger when more are in proximity.
  ##
  */
 
-int numFlocks = 3;
-int maxBoids = 400;
+int numFlocks = 2;
+int maxBoids = 300;
 Flock[] flocks;
 ExplosionManager explosions;
 
 public static PVector center;
-public static float borderWeight = 0.3;
+public static float borderWeight = 0.2;
 public static boolean wrap = false;
 
 boolean randomizeProperties = true;
@@ -104,7 +104,7 @@ void setup() {
 }
 
 void draw() {
-  background(64);
+  background(96);
 
   for (int i = 0; i < numFlocks; i++) {
     flocks[i].run(flocks);

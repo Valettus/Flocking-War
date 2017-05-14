@@ -25,10 +25,12 @@ TODO:
  #Experiment with removing Boid.calcSteer and replace with simple velocity, acceleration, and damping.
  --Every property would need to be re-tuned to get good behavior again.
  --But, if the flocking still works with this change, it would remove several vector operations per boid per frame, including normalize().
- #
+ #Try a hit point system for destruction.
+ --Design it to result in basically the same behavior, but allow less than 3 boids to destroy something,
+ --Which is impossible currently.
  */
 
-int numFlocks = 1;
+int numFlocks = 2;
 int numBoids = 300;
 Flock[] flocks;
 ExplosionManager explosions;
@@ -36,9 +38,12 @@ ExplosionManager explosions;
 public static PVector center;
 public static float borderWeight = 0.2;
 public static boolean wrap = false;
+public static boolean hostility = true;
+public static boolean destruction = true;
+public static boolean avoidOther = true;
 public static float deltaTime = 16.667;
 
-String[] options = {"Flock Count: ", "Boid Count: ", "Spawn Mode: ", "Boid Properties: ", "Border Mode: "};
+String[] options = {"Flock Count:", "Boid Count:", "Spawn Mode:", "Boid Properties:", "Border Mode:", "Hostility:", "Destruction:", "Avoid:"};
 int optionIndex = 0;
 int numOptions = 3;
 boolean optionsActive = false;
@@ -76,7 +81,7 @@ float minOtherCohR = 25;
 float maxOtherCohR = 75;
 float minOtherSep = 1;
 float maxOtherSep = 3;
-float minOtherCoh = -2;
+float minOtherCoh = -2; //Unused at the moment
 float maxOtherCoh = -0.5;
 //-----
 
@@ -112,15 +117,14 @@ void draw() {
 void options() {
   PVector pos = new PVector(10, 40);
   float lineSpace = 20;
-  
-  fill(200);
+
+  fill(255);
   text("Hide Text: 'h'", pos.x, pos.y);
-  
-  fill(255);  
+
   pos.y += lineSpace;
   text("Restart: Spacebar", pos.x, pos.y);
 
-  
+
 
   pos.y += lineSpace;
   text("Toggle Options: 'o'", pos.x, pos.y);
@@ -134,20 +138,31 @@ void options() {
     pos.y += lineSpace;
     fill(200);
     text("(Navigate with arrow keys)", pos.x, pos.y);
-
-    fill(255);
+    pos.y += lineSpace;
+    fill(200);
+    stroke(200);
+    strokeWeight(1);
+    text("Spawn Options (Require restart (Spacebar))", pos.x, pos.y);
+    line(pos.x, pos.y+2, pos.x + textWidth("Spawn Options"), pos.y+2);
+    
     for (int i = 0; i < options.length; i++) {
+      fill(255);
       pos.y += lineSpace;
+      if (i == 5 || i == 4)
+        pos.y += lineSpace;
       if (i == optionIndex) {
         strokeWeight(1);
-        line(pos.x, pos.y+2, pos.x + 100, pos.y+2);
+        stroke(255, 255, 0);
+        fill(255, 255, 0);
+        line(pos.x, pos.y+2, pos.x + textWidth(options[i]), pos.y+2);
       }
       text(options[i], pos.x, pos.y);
     }
 
+    fill(255);
     textSize(12);
     //0
-    pos.y -= lineSpace * (options.length-1);
+    pos.y -= lineSpace * (options.length+1);
     pos.x = 120;
     text(numFlocks, pos.x, pos.y);
     //1
@@ -166,11 +181,37 @@ void options() {
     else
       text("Fixed", pos.x, pos.y);
     //4
-    pos.y += lineSpace;
+    pos.y += lineSpace*2;
     if (wrap)
       text("Wrap", pos.x, pos.y);
     else
       text("Repel", pos.x, pos.y);
+    pos.y += lineSpace;
+    pos.x -=110;
+    fill(200);
+    stroke(200);
+    text("Interactions between flocks", pos.x, pos.y);
+    line(pos.x, pos.y+2, pos.x + textWidth("Interactions between flocks"), pos.y+2);
+    //5
+    pos.y += lineSpace;
+    pos.x += 110;
+    fill(255);
+    if(hostility)
+      text("Yes", pos.x, pos.y);
+    else
+      text("No", pos.x, pos.y);
+    //6
+    pos.y += lineSpace;
+    if(destruction)
+      text("Yes", pos.x, pos.y);
+    else
+      text("No", pos.x, pos.y);
+    //7
+    pos.y += lineSpace;
+    if(avoidOther)
+      text("Yes", pos.x, pos.y);
+    else
+      text("No", pos.x, pos.y);
   }
 }
 
@@ -210,6 +251,15 @@ void keyPressed() {
       case 4:
         wrap = !wrap;
         break;
+      case 5:
+        hostility = !hostility;
+        break;
+      case 6:
+        destruction = !destruction;
+        break;
+      case 7:
+        avoidOther = !avoidOther;
+        break;
       }
     }
   } else {
@@ -219,8 +269,8 @@ void keyPressed() {
     if (key == 'o' || key == 'O') {
       optionsActive = !optionsActive;
     }
-    if(key == 'h' || key == 'H') {
-      hideText = !hideText; 
+    if (key == 'h' || key == 'H') {
+      hideText = !hideText;
     }
   }
 }
@@ -250,7 +300,6 @@ Flock initializeFlock(int index, int count, color c) {
     flock.setFlockingRadius (random(minSepR, maxSepR), random(minAliR, maxAliR), random(minCohR, maxCohR));
     flock.setFlockAvoidanceProperties(random(minOtherSep, maxOtherSep), random(minOtherCoh, maxOtherCoh), 
       random(minOtherSepR, maxOtherSepR), random(minOtherCohR, maxOtherCohR));
-    
   } else {
     flock.setBoidProperties(c, 
       average(minSize, maxSize), //size
@@ -260,12 +309,11 @@ Flock initializeFlock(int index, int count, color c) {
     flock.setFlockingRadius(average(minSepR, maxSepR), average(minAliR, maxAliR), average(minCohR, maxCohR));
     flock.setFlockAvoidanceProperties(average(minOtherSep, maxOtherSep), average(minOtherCoh, maxOtherCoh), 
       average(minOtherSepR, maxOtherSepR), average(minOtherCohR, maxOtherCohR));
-    
   }
-  
-  if(randomSpawn)
-      flock.initializeBoids(count);
-    else
-      flock.initializeBoids(count, new PVector(random(width), random(height)));
+
+  if (randomSpawn)
+    flock.initializeBoids(count);
+  else
+    flock.initializeBoids(count, new PVector(random(width), random(height)));
   return flock;
 }

@@ -75,18 +75,26 @@ class Boid {
   }
 
   void otherFlock(ArrayList<Boid> boids) {
-    if (countWithinRadius(boids, 15) > 3) {
-      explosions.addExplosion(position, 12, 500, strokeColor, 3);
-      PVector ali = align(boids, 20).mult(250); //Find average velocity of attackers for direction of explosion
-      explosions.addSpark(position, ali, strokeColor, 2);
-      flock.removeBoid(this);
+    if(FlockingWar.destruction) {
+      if (countWithinRadius(boids, 15) > 3) {
+        explosions.addExplosion(position, 12, 500, strokeColor, 3);
+        PVector ali = align(boids, 20).mult(250); //Find average velocity of attackers for direction of explosion
+        explosions.addSpark(position, ali, strokeColor, 2);
+        flock.removeBoid(this);
+        return;
+      }
     }
     
-    PVector att = getAttackVector(boids, 100, true);
+    PVector att = new PVector(0,0);
+    if(FlockingWar.hostility)
+      att = getAttackVector(boids, 100, true);
     if(att.x == 0 && att.y == 0) {
-      PVector sep = separate(boids, flock.sepOtherRadius, true, false);
-      sep.mult(flock.sepOtherWeight);
-      applyForce(sep);
+      if(FlockingWar.avoidOther) {
+        //PVector sep = separate(boids, flock.sepOtherRadius, true, false);
+        //sep.mult(flock.sepOtherWeight);
+        //applyForce(sep);
+        applyForce(separate(boids, flock.sepOtherRadius, true, false).mult(flock.sepOtherWeight));
+      }
     } else {
       att.mult(1.5);
       applyForce(att);

@@ -28,7 +28,7 @@ TODO:
  #
  */
 
-int numFlocks = 2;
+int numFlocks = 1;
 int numBoids = 300;
 Flock[] flocks;
 ExplosionManager explosions;
@@ -90,7 +90,7 @@ void setup() {
 }
 
 void draw() {
-  background(128);
+  background(96);
   int count = flocks.length;
   for (int i = 0; i < count; i++) {
     flocks[i].run(flocks);
@@ -234,7 +234,7 @@ void Restart() {
   flocks = new Flock[numFlocks];
   //initialize flocks
   for (int i = 0; i < numFlocks; i++) {
-    flocks[i] = initializeFlock(i, numBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)), 255 * (1-((float)i/(numFlocks-1)))));
+    flocks[i] = initializeFlock(i, numBoids/numFlocks, color(random(255), 255 * ((float)i/(numFlocks-1)), random(255)));
   }
 }
 

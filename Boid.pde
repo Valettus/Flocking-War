@@ -44,7 +44,8 @@ class Boid {
     
     friendlyCount = -1;
     attackerCount = 0;
-    attacking--;
+    if(attacking > 0)
+      attacking--;
   }
 
   void applyForce(PVector force) {
@@ -67,7 +68,7 @@ class Boid {
     applyForce(cohesion(flock.boids, flock.cohRadius, true).mult(flock.cohWeight));
     
     if(attacking <= 0) {
-      applyForce(separate(flock.boids, flock.sepRadius).mult(flock.sepWeight));
+      applyForce(separate(flock.boids, flock.sepRadius, true, false).mult(flock.sepWeight));
     } else {
       applyForce(separate(flock.boids, 7).mult(2));
     }

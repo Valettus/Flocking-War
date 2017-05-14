@@ -28,7 +28,7 @@ class Flock {
   }
 
   void setBoidProperties(color c, float size, float maxSpeed, float force) {
-    strokeColor = c;
+    strokeColor = brightenColor(c);
     boidSize = size;
     boidMaxSpeed = maxSpeed;
     boidForce = force;
@@ -95,13 +95,14 @@ class Flock {
   void run(Flock[] allFlocks) {
 
     for (int i = 0; i < flockSize; i++) {
-      boids.get(i).flock();  //Passing the entire list of boids to each boid individually
-
+      boids.get(i).flock();  //Passing the entire list of boids to each boid individually      
+      
       for (Flock f : allFlocks) {
         if (i >= flockSize) { 
           break;
         }
         if (f.id != id) {
+          
           boids.get(i).otherFlock(f.boids);
         }
       }
